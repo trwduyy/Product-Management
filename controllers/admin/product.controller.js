@@ -1,31 +1,48 @@
 const Product = require("../../models/product.model");
 const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
+const paginationHelper = require("../../helpers/pagination");
 
 module.exports.index = async (req, res) => {
 
-  filterStatus = filterStatusHelper(req.query);
-  
-  find = {
+  const filterStatus = filterStatusHelper(req.query);
+
+  const find = {
     deleted: false
-  }
+  };
 
   if (req.query.status) {
     find.status = req.query.status;
   }
 
-  search = searchHelper(req.query);
+  const search = searchHelper(req.query);
 
-  if(search.regex){
+  if (search.regex) {
     find.title = search.regex;
   }
 
-  const products = await Product.find(find);
+  // Pagination
+  const countProducts = await Product.countDocuments(find);
 
-  res.render('admin/pages/product/index', {
-    pageTitle: 'Product Management',
+  const objectPagination = paginationHelper(
+    {
+      currentPage: 1,
+      limitItems: 4
+    },
+    req.query,
+    countProducts
+  );
+  // End Pagination
+
+  const products = await Product.find(find)
+    .limit(objectPagination.limitItems)
+    .skip(objectPagination.skip);
+
+  res.render("admin/pages/product/index", {
+    pageTitle: "Product Management",
     products: products,
     filterStatus: filterStatus,
-    keyword: search.keyword
+    keyword: search.keyword,
+    pagination: objectPagination
   });
-}
+};
