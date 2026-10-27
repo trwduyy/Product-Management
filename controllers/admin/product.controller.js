@@ -1,4 +1,5 @@
 const Product = require("../../models/product.model");
+const systemConfig = require("../../config/system");
 const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
@@ -45,4 +46,14 @@ module.exports.index = async (req, res) => {
     keyword: search.keyword,
     pagination: objectPagination
   });
+};
+
+// [PATCH] /admin/product/change-status/:status/:id
+module.exports.changeStatus = async (req, res) => {
+  const status = req.params.status;
+  const id = req.params.id;
+
+  await Product.updateOne({ _id: id }, { status: status });
+
+  res.redirect(req.get("Referrer") || `${systemConfig.prefixAdmin}/product`);
 };
