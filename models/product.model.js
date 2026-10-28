@@ -1,4 +1,4 @@
-mongoose = require('mongoose');
+const mongoose = require('mongoose');
 
 const productSchema = new mongoose.Schema({
     title: String,
@@ -9,7 +9,11 @@ const productSchema = new mongoose.Schema({
     thumbnail: String,
     status: String,
     position: Number,
-    deleted: Boolean
+    deleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedAt: Date
 });
 const Product = mongoose.model('Product', productSchema, 'products');
 
