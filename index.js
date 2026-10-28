@@ -15,6 +15,7 @@ app.set("views", "./views");
 app.set("view engine", "pug");
 
 app.use(methodOverride("_method"));
+app.use(express.urlencoded({ extended: false }));
 
 app.use(express.static("public"));
 

@@ -57,3 +57,30 @@ module.exports.changeStatus = async (req, res) => {
 
   res.redirect(req.get("Referrer") || `${systemConfig.prefixAdmin}/product`);
 };
+
+// [PATCH] /admin/product/change-multi
+module.exports.changeMulti = async (req, res) => {
+  const type = req.body.type;
+  const ids = req.body.ids ? req.body.ids.split(",").map((id) => id.trim()) : [];
+
+  switch (type) {
+    case "active":
+      await Product.updateMany({ _id: { $in: ids } }, { status: "active" });
+      break;
+    case "inactive":
+      await Product.updateMany({ _id: { $in: ids } }, { status: "inactive" });
+      break;
+    case "delete-all":
+      await Product.updateMany(
+        { _id: { $in: ids } },
+        {
+          deleted: true
+        }
+      );
+      break;
+    default:
+      break;
+  }
+
+  res.redirect(req.get("Referrer") || `${systemConfig.prefixAdmin}/product`);
+};
