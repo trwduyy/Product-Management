@@ -56,6 +56,8 @@ module.exports.changeStatus = async (req, res) => {
 
   await Product.updateOne({ _id: id }, { status: status });
 
+  req.flash("success", "Status updated successfully!");
+
   res.redirect(req.get("Referrer") || `${systemConfig.prefixAdmin}/product`);
 };
 
@@ -67,9 +69,11 @@ module.exports.changeMulti = async (req, res) => {
   switch (type) {
     case "active":
       await Product.updateMany({ _id: { $in: ids } }, { status: "active" });
+      req.flash("success", `Updated status for ${ids.length} products successfully!`);
       break;
     case "inactive":
       await Product.updateMany({ _id: { $in: ids } }, { status: "inactive" });
+      req.flash("success", `Updated status for ${ids.length} products successfully!`);
       break;
     case "delete-all":
       await Product.updateMany(
@@ -79,6 +83,7 @@ module.exports.changeMulti = async (req, res) => {
           deletedAt: new Date()
         }
       );
+      req.flash("success", `Deleted ${ids.length} products successfully!`);
       break;
     case "change-position":
       for (const item of ids) {
@@ -86,6 +91,7 @@ module.exports.changeMulti = async (req, res) => {
         position = parseInt(position);
         await Product.updateOne({ _id: id }, { position: position });
       }
+      req.flash("success", `Updated position for ${ids.length} products successfully!`);
       break;
     default:
       break;
@@ -105,6 +111,8 @@ module.exports.deleteItem = async (req, res) => {
       deletedAt: new Date()
     }
   );
+
+  req.flash("success", "Product deleted successfully!");
 
   res.redirect(req.get("Referrer") || `${systemConfig.prefixAdmin}/product`);
 };
