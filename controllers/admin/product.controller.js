@@ -3,6 +3,7 @@ const systemConfig = require("../../config/system");
 const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
+const { createUniqueSlug } = require("../../helpers/slug");
 
 module.exports.index = async (req, res) => {
 
@@ -137,7 +138,11 @@ module.exports.createPost = async (req, res) => {
     req.body.position = parseInt(req.body.position);
   }
 
-  const product = new Product(req.body);
+  const product = new Product({
+    ...req.body,
+    slug: await createUniqueSlug(Product, req.body.title),
+    thumbnail: req.file ? `/uploads/products/${req.file.filename}` : req.body.thumbnail
+  });
   await product.save();
 
   req.flash("success", "Product created successfully!");
