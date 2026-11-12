@@ -116,3 +116,31 @@ module.exports.deleteItem = async (req, res) => {
 
   res.redirect(req.get("Referrer") || `${systemConfig.prefixAdmin}/product`);
 };
+
+// [GET] /admin/product/create
+module.exports.create = async (req, res) => {
+  res.render("admin/pages/product/create", {
+    pageTitle: "Add New Product"
+  });
+};
+
+// [POST] /admin/product/create
+module.exports.createPost = async (req, res) => {
+  req.body.price = parseInt(req.body.price) || 0;
+  req.body.discountPercentage = parseInt(req.body.discountPercentage) || 0;
+  req.body.stock = parseInt(req.body.stock) || 0;
+
+  if (req.body.position == "") {
+    const countProducts = await Product.countDocuments();
+    req.body.position = countProducts + 1;
+  } else {
+    req.body.position = parseInt(req.body.position);
+  }
+
+  const product = new Product(req.body);
+  await product.save();
+
+  req.flash("success", "Product created successfully!");
+
+  res.redirect(`${systemConfig.prefixAdmin}/product`);
+};
