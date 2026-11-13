@@ -4,6 +4,8 @@ const filterStatusHelper = require("../../helpers/filterStatus");
 const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
 const { createUniqueSlug } = require("../../helpers/slug");
+const validateProductInput = require("../../helpers/validateProduct");
+const fs = require("fs");
 
 module.exports.index = async (req, res) => {
 
@@ -121,26 +123,38 @@ module.exports.deleteItem = async (req, res) => {
 // [GET] /admin/product/create
 module.exports.create = async (req, res) => {
   res.render("admin/pages/product/create", {
-    pageTitle: "Add New Product"
+    pageTitle: "Add New Product",
+    formData: {}
   });
 };
 
 // [POST] /admin/product/create
 module.exports.createPost = async (req, res) => {
-  req.body.price = parseInt(req.body.price) || 0;
-  req.body.discountPercentage = parseInt(req.body.discountPercentage) || 0;
-  req.body.stock = parseInt(req.body.stock) || 0;
+  const { values, errors } = validateProductInput(req.body);
 
-  if (req.body.position == "") {
+  if (errors.length > 0) {
+    if (req.file) {
+      try {
+        await fs.promises.unlink(req.file.path);
+      } catch (error) {
+        console.error("Unable to remove invalid product upload:", error);
+      }
+    }
+    req.flash("error", errors.join(" "));
+    return res.status(400).render("admin/pages/product/create", {
+      pageTitle: "Add New Product",
+      formData: req.body
+    });
+  }
+
+  if (values.position === null) {
     const countProducts = await Product.countDocuments();
-    req.body.position = countProducts + 1;
-  } else {
-    req.body.position = parseInt(req.body.position);
+    values.position = countProducts + 1;
   }
 
   const product = new Product({
-    ...req.body,
-    slug: await createUniqueSlug(Product, req.body.title),
+    ...values,
+    slug: await createUniqueSlug(Product, values.title),
     thumbnail: req.file ? `/uploads/products/${req.file.filename}` : req.body.thumbnail
   });
   await product.save();

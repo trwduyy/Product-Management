@@ -19,6 +19,7 @@ block main
         class="form-control"
         id="title"
         name="title"
+        value=formData.title
         required
       )
     div(class="form-group")
@@ -28,7 +29,7 @@ block main
         id="desc"
         name="description"
         rows="5"
-      )
+      ) #{formData.description}
     div(class="form-group")
       label(for="price") Price
       input(
@@ -36,7 +37,7 @@ block main
         class="form-control"
         id="price"
         name="price"
-        value="0"
+        value=formData.price || 0
         min="0"
       )
     div(class="form-group")
@@ -46,7 +47,7 @@ block main
         class="form-control"
         id="discount"
         name="discountPercentage"
-        value="0"
+        value=formData.discountPercentage || 0
         min="0"
       )
     div(class="form-group")
@@ -56,7 +57,7 @@ block main
         class="form-control"
         id="stock"
         name="stock"
-        value="0"
+        value=formData.stock || 0
         min="0"
       )
     div(class="form-group")
@@ -82,6 +83,7 @@ block main
         id="position"
         name="position"
         placeholder="Auto increment"
+        value=formData.position
         min="1"
       )
     div(class="form-group form-check form-check-inline")
@@ -91,7 +93,7 @@ block main
         id="statusActive"
         name="status"
         value="active"
-        checked
+        checked=formData.status !== 'inactive'
       )
       label(for="statusActive" class="form-check-label") Active
     div(class="form-group form-check form-check-inline")
@@ -101,6 +103,7 @@ block main
         id="statusInActive"
         name="status"
         value="inactive"
+        checked=formData.status === 'inactive'
       )
       label(for="statusInActive" class="form-check-label") Inactive
     div(class="form-group")
