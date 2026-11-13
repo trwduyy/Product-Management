@@ -10,14 +10,16 @@ const slugify = (value) => {
   return slug || "product";
 };
 
-const createUniqueSlug = async (Model, value) => {
+const createUniqueSlug = async (Model, value, excludeId) => {
   const baseSlug = slugify(value);
   let slug = baseSlug;
   let suffix = 2;
+  const query = excludeId ? { slug, _id: { $ne: excludeId } } : { slug };
 
-  while (await Model.exists({ slug })) {
+  while (await Model.exists(query)) {
     slug = `${baseSlug}-${suffix}`;
     suffix += 1;
+    query.slug = slug;
   }
 
   return slug;

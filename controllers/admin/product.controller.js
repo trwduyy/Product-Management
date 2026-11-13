@@ -6,6 +6,28 @@ const paginationHelper = require("../../helpers/pagination");
 const { createUniqueSlug } = require("../../helpers/slug");
 const validateProductInput = require("../../helpers/validateProduct");
 const fs = require("fs");
+const path = require("path");
+
+const productUploadDirectory = path.resolve(__dirname, "../../public/uploads/products");
+
+const removeManagedThumbnail = async (thumbnail) => {
+  if (!thumbnail || !thumbnail.startsWith("/uploads/products/")) {
+    return;
+  }
+
+  const filePath = path.resolve(__dirname, "../../public", thumbnail.slice(1));
+  if (!filePath.startsWith(productUploadDirectory + path.sep)) {
+    return;
+  }
+
+  try {
+    await fs.promises.unlink(filePath);
+  } catch (error) {
+    if (error.code !== "ENOENT") {
+      console.error("Unable to remove replaced product thumbnail:", error);
+    }
+  }
+};
 
 module.exports.index = async (req, res) => {
 
@@ -124,7 +146,11 @@ module.exports.deleteItem = async (req, res) => {
 module.exports.create = async (req, res) => {
   res.render("admin/pages/product/create", {
     pageTitle: "Add New Product",
-    formData: {}
+    formData: {},
+    formAction: `${systemConfig.prefixAdmin}/product/create`,
+    formTitle: "Add New Product",
+    submitText: "Create",
+    isEdit: false
   });
 };
 
@@ -143,7 +169,11 @@ module.exports.createPost = async (req, res) => {
     req.flash("error", errors.join(" "));
     return res.status(400).render("admin/pages/product/create", {
       pageTitle: "Add New Product",
-      formData: req.body
+      formData: req.body,
+      formAction: `${systemConfig.prefixAdmin}/product/create`,
+      formTitle: "Add New Product",
+      submitText: "Create",
+      isEdit: false
     });
   }
 
@@ -161,5 +191,72 @@ module.exports.createPost = async (req, res) => {
 
   req.flash("success", "Product created successfully!");
 
+  res.redirect(`${systemConfig.prefixAdmin}/product`);
+};
+
+// [GET] /admin/product/edit/:id
+module.exports.edit = async (req, res) => {
+  const product = await Product.findOne({ _id: req.params.id, deleted: false });
+
+  if (!product) {
+    return res.status(404).send("Product not found");
+  }
+
+  res.render("admin/pages/product/create", {
+    pageTitle: "Edit Product",
+    formData: product,
+    formAction: `${systemConfig.prefixAdmin}/product/edit/${product.id}`,
+    formTitle: "Edit Product",
+    submitText: "Save Changes",
+    currentThumbnail: product.thumbnail,
+    isEdit: true
+  });
+};
+
+// [PATCH] /admin/product/edit/:id
+module.exports.editPatch = async (req, res) => {
+  const product = await Product.findOne({ _id: req.params.id, deleted: false });
+
+  if (!product) {
+    if (req.file) {
+      await removeManagedThumbnail(`/uploads/products/${req.file.filename}`);
+    }
+    return res.status(404).send("Product not found");
+  }
+
+  const { values, errors } = validateProductInput(req.body);
+  if (errors.length > 0) {
+    if (req.file) {
+      await removeManagedThumbnail(`/uploads/products/${req.file.filename}`);
+    }
+    req.flash("error", errors.join(" "));
+    return res.status(400).render("admin/pages/product/create", {
+      pageTitle: "Edit Product",
+      formData: req.body,
+      formAction: `${systemConfig.prefixAdmin}/product/edit/${product.id}`,
+      formTitle: "Edit Product",
+      submitText: "Save Changes",
+      currentThumbnail: product.thumbnail,
+      isEdit: true
+    });
+  }
+
+  if (values.position === null) {
+    values.position = product.position;
+  }
+
+  const previousThumbnail = product.thumbnail;
+  product.set({
+    ...values,
+    slug: await createUniqueSlug(Product, values.title, product.id),
+    thumbnail: req.file ? `/uploads/products/${req.file.filename}` : previousThumbnail
+  });
+  await product.save();
+
+  if (req.file && previousThumbnail !== product.thumbnail) {
+    await removeManagedThumbnail(previousThumbnail);
+  }
+
+  req.flash("success", "Product updated successfully!");
   res.redirect(`${systemConfig.prefixAdmin}/product`);
 };

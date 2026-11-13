@@ -4,14 +4,16 @@ include ../../mixins/alert.pug
 block main
   +alert-error(5000)
 
-  h1(class="mb-4") Add New Product
+  h1(class="mb-4") #{formTitle}
 
   form(
-    action=`${prefixAdmin}/product/create`
+    action=formAction
     id="form-create-product"
     method="POST"
     enctype="multipart/form-data"
   )
+    if isEdit
+      input(type="hidden" name="_method" value="PATCH")
     div(class="form-group")
       label(for="title") Title
       input(
@@ -71,9 +73,9 @@ block main
       )
       img(
         id="thumbnail-preview"
-        src=""
+        src=currentThumbnail
         alt="Selected product thumbnail preview"
-        style="display: none; max-width: 240px; max-height: 240px; margin-top: 10px;"
+        style=`display: ${currentThumbnail ? "block" : "none"}; max-width: 240px; max-height: 240px; margin-top: 10px;`
       )
     div(class="form-group")
       label(for="position") Position
@@ -110,7 +112,7 @@ block main
       button(
         type="submit"
         class="btn btn-primary"
-      ) Create
+      ) #{submitText}
 
   script(src="/admin/js/product.js")
 
