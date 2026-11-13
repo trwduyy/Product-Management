@@ -15,8 +15,14 @@ const adminRoute = require("./routes/admin/index.route");
 const systemConfig = require("./config/system");
 
 // Flash
-app.use(cookieParser("KEY_RANDOM"));
-app.use(session({ cookie: { maxAge: 60000 } }));
+const sessionSecret = process.env.SESSION_SECRET || "KEY_RANDOM";
+app.use(cookieParser(sessionSecret));
+app.use(session({
+  secret: sessionSecret,
+  resave: false,
+  saveUninitialized: false,
+  cookie: { maxAge: 60000 }
+}));
 app.use(flash());
 // End Flash
 

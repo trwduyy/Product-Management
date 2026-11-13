@@ -56,8 +56,8 @@ if (buttonsPagination.length > 0) {
 // End Pagination
 
 // Show Alert
-const showAlert = document.querySelector("[show-alert]");
-if (showAlert) {
+const showAlerts = document.querySelectorAll("[show-alert]");
+showAlerts.forEach((showAlert) => {
   const time = parseInt(showAlert.getAttribute("data-time")) || 3000;
   const closeAlert = showAlert.querySelector("[close-alert]");
 
@@ -70,5 +70,5 @@ if (showAlert) {
       showAlert.classList.add("alert-hidden");
     });
   }
-}
+});
 // End Show Alert

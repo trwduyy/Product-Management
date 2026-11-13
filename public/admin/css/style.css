@@ -83,15 +83,6 @@
 }
 
 [show-alert] [close-alert] {
-  background: #ffffffc4;
-  display: inline-block;
-  width: 24px;
-  height: 24px;
-  line-height: 24px;
-  text-align: center;
-  font-weight: 600;
-  border-radius: 50%;
   cursor: pointer;
-  margin-left: 8px;
 }
 /* End Show Alert */

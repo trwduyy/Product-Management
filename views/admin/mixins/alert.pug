@@ -1,18 +1,38 @@
 mixin alert-success(time)
-  - if (messages.success)
-    .message.info
-      div(
-        class="alert alert-success"
-        show-alert
-        data-time=time
-      ) #{messages.success} <span close-alert>x</span>
+  if messages.success
+    each message in messages.success
+      .message.info
+        div(
+          class="alert alert-success alert-dismissible fade show"
+          role="alert"
+          show-alert
+          data-time=time
+        )
+          | #{message}
+          button(
+            type="button"
+            class="close"
+            aria-label="Close"
+            close-alert
+          )
+            span(aria-hidden="true") &times;
 
 mixin alert-error(time)
-  - if (messages.error)
-    .message.info
-      div(
-        class="alert alert-danger"
-        show-alert
-        data-time=time
-      ) #{messages.error} <span close-alert>x</span>
+  if messages.error
+    each message in messages.error
+      .message.info
+        div(
+          class="alert alert-danger alert-dismissible fade show"
+          role="alert"
+          show-alert
+          data-time=time
+        )
+          | #{message}
+          button(
+            type="button"
+            class="close"
+            aria-label="Close"
+            close-alert
+          )
+            span(aria-hidden="true") &times;
 
