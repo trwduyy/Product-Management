@@ -122,3 +122,34 @@ if (formChangeMulti) {
   });
 }
 // End Form Change Multi
+
+// Thumbnail Preview
+const thumbnailInput = document.querySelector("#thumbnail");
+const thumbnailPreview = document.querySelector("#thumbnail-preview");
+
+if (thumbnailInput && thumbnailPreview) {
+  let previewUrl = null;
+
+  thumbnailInput.addEventListener("change", () => {
+    const file = thumbnailInput.files[0];
+
+    if (!file || !file.type.startsWith("image/")) {
+      thumbnailPreview.removeAttribute("src");
+      thumbnailPreview.style.display = "none";
+      if (previewUrl) {
+        URL.revokeObjectURL(previewUrl);
+        previewUrl = null;
+      }
+      return;
+    }
+
+    if (previewUrl) {
+      URL.revokeObjectURL(previewUrl);
+    }
+
+    previewUrl = URL.createObjectURL(file);
+    thumbnailPreview.src = previewUrl;
+    thumbnailPreview.style.display = "block";
+  });
+}
+// End Thumbnail Preview
