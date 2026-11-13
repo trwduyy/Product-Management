@@ -68,6 +68,12 @@ block main
         name="thumbnail"
         accept="image/*"
       )
+      img(
+        id="thumbnail-preview"
+        src=""
+        alt="Selected product thumbnail preview"
+        style="display: none; max-width: 240px; max-height: 240px; margin-top: 10px;"
+      )
     div(class="form-group")
       label(for="position") Position
       input(
