@@ -74,6 +74,28 @@ module.exports.index = async (req, res) => {
   });
 };
 
+// [GET] /admin/product/detail/:id
+module.exports.detail = async (req, res) => {
+  const product = await Product.findOne({
+    _id: req.params.id,
+    deleted: false
+  });
+
+  if (!product) {
+    return res.status(404).send("Product not found");
+  }
+
+  product.newPrice = (
+    product.price -
+    (product.price * product.discountPercentage) / 100
+  ).toFixed(2);
+
+  res.render("admin/pages/product/detail", {
+    pageTitle: product.title,
+    product
+  });
+};
+
 // [PATCH] /admin/product/change-status/:status/:id
 module.exports.changeStatus = async (req, res) => {
   const status = req.params.status;

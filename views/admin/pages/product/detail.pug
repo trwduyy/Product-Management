@@ -1,0 +1,40 @@
+extends ../../layouts/default.pug
+
+block main
+  .card
+    .card-header
+      h1.mb-0 Product Detail
+    .card-body
+      .row
+        .col-md-4
+          img(
+            src=product.thumbnail
+            alt=product.title
+            class="img-fluid rounded"
+          )
+        .col-md-8
+          h2 #{product.title}
+          p #{product.description}
+
+          dl.row
+            dt.col-sm-4 Price
+            dd.col-sm-8 #{product.price}$
+            dt.col-sm-4 Discounted price
+            dd.col-sm-8 #{product.newPrice}$
+            dt.col-sm-4 Discount
+            dd.col-sm-8 #{product.discountPercentage}%
+            dt.col-sm-4 Stock
+            dd.col-sm-8 #{product.stock}
+            dt.col-sm-4 Position
+            dd.col-sm-8 #{product.position}
+            dt.col-sm-4 Status
+            dd.col-sm-8 #{product.status}
+
+          a(
+            href=`${prefixAdmin}/product`
+            class="btn btn-secondary"
+          ) Back to products
+          a(
+            href=`${prefixAdmin}/product/edit/${product.id}`
+            class="btn btn-warning ml-1"
+          ) Modify
