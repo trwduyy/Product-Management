@@ -5,29 +5,8 @@ const searchHelper = require("../../helpers/search");
 const paginationHelper = require("../../helpers/pagination");
 const { createUniqueSlug } = require("../../helpers/slug");
 const validateProductInput = require("../../helpers/validateProduct");
-const fs = require("fs");
-const path = require("path");
-
-const productUploadDirectory = path.resolve(__dirname, "../../public/uploads/products");
-
-const removeManagedThumbnail = async (thumbnail) => {
-  if (!thumbnail || !thumbnail.startsWith("/uploads/products/")) {
-    return;
-  }
-
-  const filePath = path.resolve(__dirname, "../../public", thumbnail.slice(1));
-  if (!filePath.startsWith(productUploadDirectory + path.sep)) {
-    return;
-  }
-
-  try {
-    await fs.promises.unlink(filePath);
-  } catch (error) {
-    if (error.code !== "ENOENT") {
-      console.error("Unable to remove replaced product thumbnail:", error);
-    }
-  }
-};
+const uploadProductImage = require("../../middlewares/upload");
+const { deleteImage } = require("../../helpers/cloudinary");
 
 module.exports.index = async (req, res) => {
 
@@ -181,13 +160,7 @@ module.exports.createPost = async (req, res) => {
   const { values, errors } = validateProductInput(req.body);
 
   if (errors.length > 0) {
-    if (req.file) {
-      try {
-        await fs.promises.unlink(req.file.path);
-      } catch (error) {
-        console.error("Unable to remove invalid product upload:", error);
-      }
-    }
+    await uploadProductImage.deleteUploadedImage(req);
     req.flash("error", errors.join(" "));
     return res.status(400).render("admin/pages/product/create", {
       pageTitle: "Add New Product",
@@ -207,9 +180,15 @@ module.exports.createPost = async (req, res) => {
   const product = new Product({
     ...values,
     slug: await createUniqueSlug(Product, values.title),
-    thumbnail: req.file ? `/uploads/products/${req.file.filename}` : req.body.thumbnail
+    thumbnail: req.cloudinaryImage ? req.cloudinaryImage.url : req.body.thumbnail,
+    thumbnailPublicId: req.cloudinaryImage ? req.cloudinaryImage.publicId : undefined
   });
-  await product.save();
+  try {
+    await product.save();
+  } catch (error) {
+    await uploadProductImage.deleteUploadedImage(req);
+    throw error;
+  }
 
   req.flash("success", "Product created successfully!");
 
@@ -240,17 +219,13 @@ module.exports.editPatch = async (req, res) => {
   const product = await Product.findOne({ _id: req.params.id, deleted: false });
 
   if (!product) {
-    if (req.file) {
-      await removeManagedThumbnail(`/uploads/products/${req.file.filename}`);
-    }
+    await uploadProductImage.deleteUploadedImage(req);
     return res.status(404).send("Product not found");
   }
 
   const { values, errors } = validateProductInput(req.body);
   if (errors.length > 0) {
-    if (req.file) {
-      await removeManagedThumbnail(`/uploads/products/${req.file.filename}`);
-    }
+    await uploadProductImage.deleteUploadedImage(req);
     req.flash("error", errors.join(" "));
     return res.status(400).render("admin/pages/product/create", {
       pageTitle: "Edit Product",
@@ -268,15 +243,24 @@ module.exports.editPatch = async (req, res) => {
   }
 
   const previousThumbnail = product.thumbnail;
+  const previousThumbnailPublicId = product.thumbnailPublicId;
   product.set({
     ...values,
     slug: await createUniqueSlug(Product, values.title, product.id),
-    thumbnail: req.file ? `/uploads/products/${req.file.filename}` : previousThumbnail
+    thumbnail: req.cloudinaryImage ? req.cloudinaryImage.url : previousThumbnail,
+    thumbnailPublicId: req.cloudinaryImage
+      ? req.cloudinaryImage.publicId
+      : previousThumbnailPublicId
   });
-  await product.save();
+  try {
+    await product.save();
+  } catch (error) {
+    await uploadProductImage.deleteUploadedImage(req);
+    throw error;
+  }
 
-  if (req.file && previousThumbnail !== product.thumbnail) {
-    await removeManagedThumbnail(previousThumbnail);
+  if (req.cloudinaryImage && previousThumbnailPublicId) {
+    await deleteImage(previousThumbnailPublicId);
   }
 
   req.flash("success", "Product updated successfully!");
