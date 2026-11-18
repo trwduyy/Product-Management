@@ -14,7 +14,7 @@ block main
           )
         .col-md-8
           h2 #{product.title}
-          p #{product.description}
+          .inner-description!= product.description
 
           dl.row
             dt.col-sm-4 Price

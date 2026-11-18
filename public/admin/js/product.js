@@ -1,4 +1,26 @@
 // Change Status
+// TinyMCE
+const descriptionEditor = document.querySelector("#desc");
+if (descriptionEditor && window.tinymce) {
+  tinymce.init({
+    selector: "#desc",
+    height: 400,
+    menubar: false,
+    plugins: "lists link table",
+    toolbar: "undo redo | blocks | bold italic underline strikethrough | forecolor backcolor | alignleft aligncenter alignright | bullist numlist | link table | removeformat",
+    promotion: false,
+    branding: false
+  });
+
+  const productForm = document.querySelector("#form-create-product");
+  if (productForm) {
+    productForm.addEventListener("submit", () => {
+      tinymce.triggerSave();
+    });
+  }
+}
+// End TinyMCE
+
 const buttonsChangeStatus = document.querySelectorAll("[button-change-status]");
 if (buttonsChangeStatus.length > 0) {
   const formChangeStatus = document.querySelector("#form-change-status");
