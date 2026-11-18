@@ -26,6 +26,20 @@ module.exports.index = async (req, res) => {
     find.title = search.regex;
   }
 
+  // Sorting
+  const allowedSortKeys = ["price", "position", "title"];
+  const sortKey = allowedSortKeys.includes(req.query.sortKey)
+    ? req.query.sortKey
+    : "position";
+  const sortValue =
+    req.query.sortValue === "asc" || req.query.sortValue === "1"
+      ? "asc"
+      : req.query.sortValue === "desc" || req.query.sortValue === "-1"
+        ? "desc"
+        : "desc";
+  const sort = { [sortKey]: sortValue };
+  // End Sorting
+
   // Pagination
   const countProducts = await Product.countDocuments(find);
 
@@ -40,7 +54,7 @@ module.exports.index = async (req, res) => {
   // End Pagination
 
   const products = await Product.find(find)
-    .sort({ position: "desc" })
+    .sort(sort)
     .limit(objectPagination.limitItems)
     .skip(objectPagination.skip);
 
@@ -49,7 +63,9 @@ module.exports.index = async (req, res) => {
     products: products,
     filterStatus: filterStatus,
     keyword: search.keyword,
-    pagination: objectPagination
+    pagination: objectPagination,
+    sortKey,
+    sortValue
   });
 };
 

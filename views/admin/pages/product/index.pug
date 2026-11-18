@@ -16,6 +16,22 @@ block main
           +filter-status(filterStatus)
         .col-6 
           +search()
+
+  .card.mb-3
+    .card-header Sort Products
+    .card-body
+      .row
+        .col-4
+          select(
+            class="form-control"
+            id="sort-product"
+          )
+            option(value="position-desc" selected=(sortKey === "position" && sortValue === "desc")) Position: Descending
+            option(value="position-asc" selected=(sortKey === "position" && sortValue === "asc")) Position: Ascending
+            option(value="price-desc" selected=(sortKey === "price" && sortValue === "desc")) Price: Descending
+            option(value="price-asc" selected=(sortKey === "price" && sortValue === "asc")) Price: Ascending
+            option(value="title-desc" selected=(sortKey === "title" && sortValue === "desc")) Title: Z to A
+            option(value="title-asc" selected=(sortKey === "title" && sortValue === "asc")) Title: A to Z
       
 
   .card.mb-3

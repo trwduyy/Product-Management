@@ -38,6 +38,25 @@ if (formsearch) {
 }
 // End Form Search
 
+// Product Sorting
+const sortProduct = document.querySelector("#sort-product");
+if (sortProduct) {
+  sortProduct.addEventListener("change", (event) => {
+    const parts = event.target.value.split("-");
+    const sortKey = parts[0];
+    const sortValue = parts[1];
+    const url = new URL(window.location.href);
+
+    if (sortKey && sortValue) {
+      url.searchParams.set("sortKey", sortKey);
+      url.searchParams.set("sortValue", sortValue);
+    }
+    url.searchParams.delete("page");
+    window.location.href = url.href;
+  });
+}
+// End Product Sorting
+
 // Pagination
 const buttonsPagination = document.querySelectorAll("[button-pagination]");
 if (buttonsPagination.length > 0) {
